@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
      Copyright (C) 2016-2017 crDroid Android Project
+     Copyright 2016-2017 Paranoid Android
 
      Licensed under the Apache License, Version 2.0 (the "License");
      you may not use this file except in compliance with the License.
@@ -61,4 +62,7 @@
     <color name="batterymeter_frame_color_darkintensity">@color/dark_mode_icon_color_dual_tone_background</color>
     <color name="qs_batterymeter_frame_color">@color/batterymeter_frame_color</color>
     <color name="status_bar_battery_level_text_color">@android:color/white</color>
+
+    <!-- Pixel theme -->
+    <color name="pixel_primary_color">#242424</color>
 </resources>

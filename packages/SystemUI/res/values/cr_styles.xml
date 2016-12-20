@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
      Copyright (C) 2016-2017 crDroid Android Project
+     Copyright (c) 2016-2017, Paranoid Android
 
      Licensed under the Apache License, Version 2.0 (the "License");
      you may not use this file except in compliance with the License.
@@ -74,4 +75,17 @@
         <item name="android:textColor">@color/status_bar_carrier_color</item>
         <item name="android:fontFamily">sans-serif-medium</item>
     </style>
+
+<!-- Color engine -->
+    <style name="systemui_light_theme">
+        <item name="android:colorControlNormal">?android:attr/textColorSecondary</item>
+        <item name="android:textColorPrimary">@*android:color/primary_text_material_dark</item>
+    </style>
+
+    <style name="systemui_pixel_theme">
+        <item name="android:colorPrimary">@color/pixel_primary_color</item>
+        <item name="android:colorPrimaryDark">@color/pixel_primary_color</item>
+        <item name="android:colorSecondary">@color/pixel_primary_color</item>
+    </style>
+
 </resources>
