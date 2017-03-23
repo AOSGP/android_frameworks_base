@@ -3564,13 +3564,6 @@ public final class Settings {
          */
         public static final String KEY_VOICEMAIL_BREATH = "voicemail_breath";
 
-        /**
-         * @deprecated Use {@link android.provider.Settings.Global#KEY_SMS_BREATH} instead
-         */
-        @Deprecated
-        public static final String KEY_SMS_BREATH = Global.KEY_SMS_BREATH;
-
-
         /** @hide */
         public static final Validator LOCKSCREEN_SOUNDS_ENABLED_VALIDATOR = sBooleanValidator;
 
