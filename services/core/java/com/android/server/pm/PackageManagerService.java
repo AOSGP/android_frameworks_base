@@ -1349,9 +1349,11 @@ public class PackageManagerService extends IPackageManager.Stub {
                 }
                 case MCS_GIVE_UP: {
                     if (DEBUG_INSTALL) Slog.i(TAG, "mcs_giveup too many retries");
-                    HandlerParams params = mPendingInstalls.remove(0);
-                    Trace.asyncTraceEnd(TRACE_TAG_PACKAGE_MANAGER, "queueInstall",
-                            System.identityHashCode(params));
+                    if (mPendingInstalls.size() > 0) {
+                        HandlerParams params = mPendingInstalls.remove(0);
+                        Trace.asyncTraceEnd(TRACE_TAG_PACKAGE_MANAGER, "queueInstall",
+                                System.identityHashCode(params));
+                    }
                     break;
                 }
                 case SEND_PENDING_BROADCAST: {
@@ -15769,7 +15771,7 @@ public class PackageManagerService extends IPackageManager.Stub {
 
     private boolean isCallerAllowedToSilentlyUninstall(int callingUid, String pkgName) {
         if (callingUid == Process.SHELL_UID || callingUid == Process.ROOT_UID
-              || callingUid == Process.SYSTEM_UID) {
+              || UserHandle.getAppId(callingUid) == Process.SYSTEM_UID) {
             return true;
         }
         final int callingUserId = UserHandle.getUserId(callingUid);

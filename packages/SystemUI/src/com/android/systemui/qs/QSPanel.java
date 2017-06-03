@@ -65,17 +65,20 @@ import cyanogenmod.providers.CMSettings;
 public class QSPanel extends LinearLayout implements Tunable, Callback {
 
     public static final String QS_SHOW_BRIGHTNESS = "qs_show_brightness";
+    public static final String QS_SHOW_BRIGHTNESS_ICON =
+            "system:" + Settings.System.QS_SHOW_BRIGHTNESS_ICON;
 
     protected final Context mContext;
     protected final ArrayList<TileRecord> mRecords = new ArrayList<TileRecord>();
     protected final View mBrightnessView;
-    protected final ImageView mBrightnessIcon;
+    protected final ImageView mAutoBrightnessView;
     private final H mHandler = new H();
 
     private int mPanelPaddingBottom;
     private int mBrightnessPaddingTop;
     protected boolean mExpanded;
     protected boolean mListening;
+    private boolean mIsAutomaticBrightnessAvailable = false;
 
     private Callback mCallback;
     private BrightnessController mBrightnessController;
@@ -107,7 +110,7 @@ public class QSPanel extends LinearLayout implements Tunable, Callback {
                 R.layout.quick_settings_brightness_dialog, this, false);
         addView(mBrightnessView);
 
-        mBrightnessIcon = (ImageView) mBrightnessView.findViewById(R.id.brightness_icon);
+        mAutoBrightnessView = (ImageView) mBrightnessView.findViewById(R.id.brightness_icon);
 
         setupTileLayout();
 
@@ -118,9 +121,8 @@ public class QSPanel extends LinearLayout implements Tunable, Callback {
         updateResources();
 
         mBrightnessController = new BrightnessController(getContext(),
-                mBrightnessIcon,
+                mAutoBrightnessView,
                 (ToggleSlider) findViewById(R.id.brightness_slider));
-
     }
 
     protected void setupTileLayout() {
@@ -128,10 +130,9 @@ public class QSPanel extends LinearLayout implements Tunable, Callback {
                 R.layout.qs_paged_tile_layout, this, false);
         mTileLayout.setListening(mListening);
         addView((View) mTileLayout);
-        if (getResources().getBoolean(
-                com.android.internal.R.bool.config_automatic_brightness_available)) {
-            ((ImageView) findViewById(R.id.brightness_icon)).setVisibility(View.VISIBLE);
-        }
+
+        mIsAutomaticBrightnessAvailable = getResources().getBoolean(
+                com.android.internal.R.bool.config_automatic_brightness_available);
     }
 
     public boolean isShowingCustomize() {
@@ -141,7 +142,9 @@ public class QSPanel extends LinearLayout implements Tunable, Callback {
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
-        TunerService.get(mContext).addTunable(this, QS_SHOW_BRIGHTNESS);
+        TunerService.get(mContext).addTunable(this,
+                QS_SHOW_BRIGHTNESS,
+                QS_SHOW_BRIGHTNESS_ICON);
         if (mHost != null) {
             setTiles(mHost.getTiles());
         }
@@ -167,7 +170,11 @@ public class QSPanel extends LinearLayout implements Tunable, Callback {
         if (QS_SHOW_BRIGHTNESS.equals(key)) {
             mBrightnessView.setVisibility(newValue == null || Integer.parseInt(newValue) != 0
                     ? VISIBLE : GONE);
+        } else if (QS_SHOW_BRIGHTNESS_ICON.equals(key) && mIsAutomaticBrightnessAvailable) {
+            mAutoBrightnessView.setVisibility(newValue == null || Integer.parseInt(newValue) != 0
+                    ? VISIBLE : GONE);
         }
+        updateResources();
     }
 
     public void openDetails(String subPanel) {
@@ -182,14 +189,6 @@ public class QSPanel extends LinearLayout implements Tunable, Callback {
             }
         }
         return mHost.createTile(subPanel);
-    }
-
-    private void setBrightnessIcon() {
-        boolean brightnessIconEnabled = Settings.System.getIntForUser(
-            mContext.getContentResolver(), Settings.System.QS_SHOW_BRIGHTNESS_ICON,
-                0, UserHandle.USER_CURRENT) == 1;
-        mBrightnessIcon.setVisibility(brightnessIconEnabled ? View.VISIBLE : View.GONE);
-        updateResources();
     }
 
     public void setBrightnessMirror(BrightnessMirrorController c) {
@@ -288,7 +287,6 @@ public class QSPanel extends LinearLayout implements Tunable, Callback {
                 mBrightnessController.unregisterCallbacks();
             }
         }
-        setBrightnessIcon();
     }
 
     public void refreshAllTiles() {

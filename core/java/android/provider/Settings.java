@@ -3805,12 +3805,6 @@ public final class Settings {
         public static final String RECENTS_USE_OMNISWITCH = "recents_use_omniswitch";
 
         /**
-         * Whether to show media art on lockscreen
-         * @hide
-         */
-        public static final String LOCKSCREEN_MEDIA_METADATA = "lockscreen_media_metadata";
-
-        /**
          * Enable/Disable screenshot sound
          * @hide
          */
@@ -3914,12 +3908,6 @@ public final class Settings {
          * @hide
          */
         public static final String LOCKSCREEN_MAX_NOTIF_CONFIG = "lockscreen_max_notif_cofig";
-
-	/**
-         * Enable double tap gesture anywhere on the lock screen put device to sleep
-         * @hide
-         */
-        public static final String DOUBLE_TAP_SLEEP_ANYWHERE = "double_tap_sleep_anywhere";
 
         /**
          * Statusbar crDroid logo
@@ -4749,12 +4737,6 @@ public final class Settings {
         public static final String ANIM_TILE_INTERPOLATOR = "anim_tile_interpolator";
 
         /**
-         * Quick Settings nougat animation
-         * @hide
-         */
-        public static final String QS_FANCY_ANIMATION = "qs_fancy_animation";
-
-        /**
          * What color to use for the battery LED while charging - really full (100%)
          * @hide
          */
@@ -4976,6 +4958,61 @@ public final class Settings {
          * @hide
          */
         public static final String VOLTE_ICON = "volte_icon";
+
+        /**
+         * Whether to show the weather info on the lock screen
+         * @hide
+         */
+        public static final String LOCK_SCREEN_SHOW_WEATHER = "lock_screen_show_weather";
+
+        /**
+         * Whether to show the weather location on lock screen
+         * @hide
+         */
+        public static final String LOCK_SCREEN_SHOW_WEATHER_LOCATION = "lock_screen_show_weather_location";
+
+        /**
+         * Whether to show the weather condition icon on lock screen
+         * @hide
+         */
+        public static final String LOCK_SCREEN_WEATHER_CONDITION_ICON = "lock_screen_weather_condition_icon";
+
+        /**
+         * Whether to enable or disable vibration on succesful fingerprint auth
+         * @hide
+         */
+        public static final String FP_SUCCESS_VIBRATE = "fp_success_vibrate";
+
+        /**
+         * Unlock keystore with fingerprint after reboot
+         * @hide
+         */
+        public static final String FP_UNLOCK_KEYSTORE = "fp_unlock_keystore";
+
+        /**
+         * Toast icon
+         *
+         * @hide
+         */
+        public static final String TOAST_ICON = "toast_icon";
+
+        /**
+         * Whether to show the battery info on the lockscreen while charging
+         * @hide
+         */
+        public static final String LOCKSCREEN_BATTERY_INFO = "lockscreen_battery_info";
+
+        /**
+         * Recents lock icon
+         * @hide
+         */
+        public static final String RECENTS_LOCK_ICON = "recents_lock_icon";
+
+        /**
+         * Use AOSP grid style recents
+         * @hide
+         */
+        public static final String RECENTS_USE_GRID = "recents_use_grid";
 
         /**
          * Settings to backup. This is here so that it's in the same place as the settings
@@ -8207,6 +8244,12 @@ public final class Settings {
          * @hide
          */
         public static final String LOCK_ENABLE_QS = "lockscreen_enable_qs";
+
+        /**
+         * Recents lock
+         * @hide
+         */
+        public static final String LOCKED_RECENT_TASK_LIST = "locked_recent_task_list";
 
         /**
          * One Handed mode toggle
