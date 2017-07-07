@@ -310,7 +310,7 @@ public abstract class BaseStatusBar extends SystemUI implements
 
     private Set<String> mNonBlockablePkgs;
 
-    protected boolean mScreenPinningEnabled;
+    protected boolean mOmniSwitchRecents;
 
     @Override  // NotificationData.Environment
     public boolean isDeviceProvisioned() {
@@ -370,6 +370,11 @@ public abstract class BaseStatusBar extends SystemUI implements
             if (uri.equals(Settings.System.getUriFor(
                     Settings.System.USE_SLIM_RECENTS))) {
                         updateRecents();
+            } else if (uri.equals(Settings.System.getUriFor(
+                    Settings.System.RECENTS_USE_OMNISWITCH))) {
+                mOmniSwitchRecents = Settings.System.getIntForUser(mContext.getContentResolver(),
+                       Settings.System.RECENTS_USE_OMNISWITCH, 0,
+                       UserHandle.USER_CURRENT) == 1;
             }
         }
     };
@@ -828,6 +833,10 @@ public abstract class BaseStatusBar extends SystemUI implements
 
         mContext.getContentResolver().registerContentObserver(
                 Settings.System.getUriFor(Settings.System.USE_SLIM_RECENTS), false,
+                        mSettingsObserver, UserHandle.USER_ALL);
+
+        mContext.getContentResolver().registerContentObserver(
+                Settings.System.getUriFor(Settings.System.RECENTS_USE_OMNISWITCH), false,
                         mSettingsObserver, UserHandle.USER_ALL);
 
         final Configuration currentConfig = mContext.getResources().getConfiguration();
@@ -1521,9 +1530,6 @@ public abstract class BaseStatusBar extends SystemUI implements
 
     @Override
     public void screenPinningStateChanged(boolean enabled) {
-        if (mScreenPinningEnabled != enabled) {
-            mScreenPinningEnabled = enabled;
-        }
         if (DEBUG)
             Log.d(TAG, "StatusBar API screenPinningStateChanged = " + enabled);
     }
@@ -1552,14 +1558,19 @@ public abstract class BaseStatusBar extends SystemUI implements
         public boolean onTouch(View v, MotionEvent event) {
             int action = event.getAction() & MotionEvent.ACTION_MASK;
             if (action == MotionEvent.ACTION_DOWN) {
-                preloadRecents();
+                if (mOmniSwitchRecents) {
+                    OmniSwitchConstants.preloadOmniSwitchRecents(mContext, UserHandle.CURRENT);
+                } else {
+                    preloadRecents();
+                }
             } else if (action == MotionEvent.ACTION_CANCEL) {
-                cancelPreloadingRecents();
-            } else if (action == MotionEvent.ACTION_UP) {
-                if (!v.isPressed()) {
+                if (mOmniSwitchRecents) {
                     cancelPreloadingRecents();
                 }
-
+            } else if (action == MotionEvent.ACTION_UP) {
+                if (!v.isPressed() && !mOmniSwitchRecents) {
+                    cancelPreloadingRecents();
+                }
             }
             return false;
         }
@@ -1577,35 +1588,16 @@ public abstract class BaseStatusBar extends SystemUI implements
 
     /** Proxy for RecentsComponent */
 
-    private boolean isOmniSwitchEnabled() {
-        int settingsValue = Settings.System.getIntForUser(
-                mContext.getContentResolver(), Settings.System.RECENTS_USE_OMNISWITCH, 0
-                , UserHandle.USER_CURRENT);
-        return (settingsValue == 1);
-    }
-
     protected void showRecents(boolean triggeredFromAltTab, boolean fromHome) {
-        if (isOmniSwitchEnabled()) {
-            if (!mScreenPinningEnabled) {
-                Intent showIntent = new Intent(OmniSwitchConstants.ACTION_SHOW_OVERLAY);
-                mContext.sendBroadcastAsUser(showIntent, UserHandle.CURRENT);
-            }
-        } else {
-            if (mRecents != null) {
-                sendCloseSystemWindows(SYSTEM_DIALOG_REASON_RECENT_APPS);
-                mRecents.showRecents(triggeredFromAltTab, fromHome);
-            }
+        if (mRecents != null) {
+            sendCloseSystemWindows(SYSTEM_DIALOG_REASON_RECENT_APPS);
+            mRecents.showRecents(triggeredFromAltTab, fromHome);
         }
     }
 
     protected void hideRecents(boolean triggeredFromAltTab, boolean triggeredFromHomeKey) {
         if (mSlimRecents != null) {
             mSlimRecents.hideRecents(triggeredFromHomeKey);
-        } else if (isOmniSwitchEnabled()) {
-            if (!mScreenPinningEnabled) {
-                Intent showIntent = new Intent(OmniSwitchConstants.ACTION_HIDE_OVERLAY);
-                mContext.sendBroadcastAsUser(showIntent, UserHandle.CURRENT);
-            }
         } else if (mRecents != null) {
             mRecents.hideRecents(triggeredFromAltTab, triggeredFromHomeKey);
         }
@@ -1615,11 +1607,8 @@ public abstract class BaseStatusBar extends SystemUI implements
         if (mSlimRecents != null) {
             sendCloseSystemWindows(SYSTEM_DIALOG_REASON_RECENT_APPS);
             mSlimRecents.toggleRecents(mDisplay, mLayoutDirection, getStatusBarView());
-        } else if (isOmniSwitchEnabled()) {
-            if (!mScreenPinningEnabled) {
-                Intent showIntent = new Intent(OmniSwitchConstants.ACTION_TOGGLE_OVERLAY);
-                mContext.sendBroadcastAsUser(showIntent, UserHandle.CURRENT);
-            }
+        } else if (mOmniSwitchRecents && mRecents != null) {
+            OmniSwitchConstants.toggleOmniSwitchRecents(mContext, UserHandle.CURRENT);
         } else if (mRecents != null) {
             mRecents.toggleRecents(mDisplay);
         }
@@ -1628,10 +1617,8 @@ public abstract class BaseStatusBar extends SystemUI implements
     protected void preloadRecents() {
         if (mSlimRecents != null) {
             mSlimRecents.preloadRecentTasksList();
-        } else if (!isOmniSwitchEnabled()) {
-            if (mRecents != null) {
-                mRecents.showNextAffiliatedTask();
-            }
+        } else if (mOmniSwitchRecents && mRecents != null) {
+            OmniSwitchConstants.preloadOmniSwitchRecents(mContext, UserHandle.CURRENT);
         } else if (mRecents != null) {
             mRecents.preloadRecents();
         }
@@ -1648,28 +1635,20 @@ public abstract class BaseStatusBar extends SystemUI implements
     protected void cancelPreloadingRecents() {
         if (mSlimRecents != null) {
             mSlimRecents.cancelPreloadingRecentTasksList();
-        } else if (!isOmniSwitchEnabled()) {
-            if (mRecents != null) {
-                mRecents.showNextAffiliatedTask();
-            }
-        } else if (mRecents != null) {
+        } else if (!mOmniSwitchRecents && mRecents != null) {
             mRecents.cancelPreloadingRecents();
         }
     }
 
     protected void showRecentsNextAffiliatedTask() {
-        if (!isOmniSwitchEnabled()) {
-            if (mRecents != null) {
-                mRecents.showNextAffiliatedTask();
-            }
+        if (!mOmniSwitchRecents && mRecents != null) {
+            mRecents.showNextAffiliatedTask();
         }
     }
 
     protected void showRecentsPreviousAffiliatedTask() {
-        if (!isOmniSwitchEnabled()) {
-            if (mRecents != null) {
-                mRecents.showPrevAffiliatedTask();
-            }
+        if (!mOmniSwitchRecents && mRecents != null) {
+            mRecents.showPrevAffiliatedTask();
         }
     }
 

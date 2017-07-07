@@ -5015,6 +5015,12 @@ public final class Settings {
         public static final String RECENTS_LOCK_ICON = "recents_lock_icon";
 
         /**
+         * Recents dismiss icon
+         * @hide
+         */
+        public static final String RECENTS_DISMISS_ICON = "recents_dismiss_icon";
+
+        /**
          * Use AOSP grid style recents
          * @hide
          */

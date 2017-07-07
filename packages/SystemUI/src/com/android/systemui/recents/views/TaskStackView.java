@@ -140,7 +140,7 @@ public class TaskStackView extends FrameLayout implements TaskStack.TaskStackCal
     private static final int INITIAL_STATE_UPDATE_LAYOUT_ONLY = 2;
 
     private LayoutInflater mInflater;
-    private TaskStack mStack = new TaskStack();
+    public static TaskStack mStack = new TaskStack();
     @ViewDebug.ExportedProperty(deepExport=true, prefix="layout_")
     TaskStackLayoutAlgorithm mLayoutAlgorithm;
     // The stable layout algorithm is only used to calculate the task rect with the stable bounds
@@ -1832,8 +1832,16 @@ public class TaskStackView extends FrameLayout implements TaskStack.TaskStackCal
     public final void onBusEvent(final DismissAllTaskViewsEvent event) {
         // Keep track of the tasks which will have their data removed
         ArrayList<Task> tasks = new ArrayList<>(mStack.getStackTasks());
+        ArrayList<TaskView> deletedTasks = new ArrayList<>();
+        ArrayList<TaskView> taskViews = new ArrayList<>(getTaskViews());
+        for (TaskView t : taskViews) {
+            if (Recents.sLockedTasks.contains(t.getTask())) {
+                deletedTasks.add(t);
+            }
+        }
+        taskViews.removeAll(deletedTasks);
         mAnimationHelper.startDeleteAllTasksAnimation(
-                getTaskViews(), useGridLayout(), event.getAnimationTrigger());
+                taskViews, useGridLayout(), event.getAnimationTrigger());
         event.addPostAnimationCallback(new Runnable() {
             @Override
             public void run() {
@@ -1844,10 +1852,9 @@ public class TaskStackView extends FrameLayout implements TaskStack.TaskStackCal
                 // Remove all tasks and delete the task data for all tasks
                 mStack.removeAllTasks();
                 for (int i = tasks.size() - 1; i >= 0; i--) {
-                    Task mTask = tasks.get(i);
-                    if (!mTask.isLockedTask) {
-                        EventBus.getDefault().send(new DeleteTaskDataEvent(tasks.get(i)));
-                    }
+                    Task t = tasks.get(i);
+                    if (Recents.mAllowLockTask && Recents.sLockedTasks.contains(t)) continue;
+                    EventBus.getDefault().send(new DeleteTaskDataEvent(t));
                 }
 
                 MetricsLogger.action(getContext(), MetricsEvent.OVERVIEW_DISMISS_ALL);
