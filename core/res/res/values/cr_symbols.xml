@@ -48,6 +48,9 @@
     <!-- Doze mode -->
     <java-symbol type="bool" name="config_doze_enabled_by_default" />
 
+    <!-- Power menu -->
+    <java-symbol type="array" name="config_blockPackagesSensorDrain" />
+
     <!-- Slim recent app screen-->
     <java-symbol type="integer" name="config_recentDefaultDur" />
     <java-symbol type="integer" name="config_recentExitDur" />
